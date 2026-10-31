@@ -17,6 +17,8 @@ const props = defineProps<{
   documentAnnotations: DocumentAnnotation[];
   documentRelations: DocumentRelation[];
   incomingRelations: IncomingRelation[];
+  /** Whether the "Linked by" relations can be edited from here. */
+  incomingEditable?: boolean;
   otherDocuments: DocumentRef[];
   colors: Record<string, string>;
   selectedId: number | null;
@@ -37,6 +39,7 @@ const emit = defineEmits<{
   "add-document-relation": [toName: string];
   "remove-document-relation": [toName: string];
   "set-document-relation-labels": [toName: string, labels: string[]];
+  "update-incoming-relation": [fromName: string, labels: string[] | null];
   link: [id: number];
   "remove-relation": [from: number, to: number];
   "set-relation-direction": [from: number, to: number, direction: RelationDirection];
@@ -137,11 +140,13 @@ const setSelectionMetadata = (value: string) => {
         :readonly="readonly"
         :relations="documentRelations"
         :incoming-relations="incomingRelations"
+        :incoming-editable="incomingEditable"
         :other-documents="otherDocuments"
         :relation-labels="relationLabels"
         @add="emit('add-document-relation', $event)"
         @remove="emit('remove-document-relation', $event)"
         @set-labels="(to, labels) => emit('set-document-relation-labels', to, labels)"
+        @update-incoming="(from, labels) => emit('update-incoming-relation', from, labels)"
       />
     </template>
 

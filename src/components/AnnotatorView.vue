@@ -36,6 +36,9 @@ const props = withDefaults(
     otherDocuments?: DocumentRef[];
     /** Other documents' relations pointing at this one — read-only display. */
     incomingRelations?: IncomingRelation[];
+    /** Edit a relation another document holds to this one (labels, or null to
+     * remove). When given, the "Linked by" list is editable. */
+    onUpdateIncomingRelation?: (fromName: string, labels: string[] | null) => Promise<void> | void;
     guidelinesUrl?: string;
     /** Show progress and Back/Next. Off for one document outside a queue. */
     navigation?: boolean;
@@ -122,6 +125,16 @@ const onToggleDocumentLabel = (label: Label) => {
     for (const d of [...documentAnnotations.value]) removeDocumentAnnotation(d.id);
   }
   toggleDocumentLabel(label);
+};
+
+// An edit to a relation another document holds: the host writes it there.
+// A rejection is reported like a failed save; nothing here changes.
+const updateIncoming = async (fromName: string, labels: string[] | null) => {
+  try {
+    await props.onUpdateIncomingRelation?.(fromName, labels);
+  } catch (e) {
+    emit("save-error", e);
+  }
 };
 
 // Snap the raw browser selection to the task's declared granularity — e.g. a
@@ -385,6 +398,7 @@ onBeforeUnmount(() => {
         :document-annotations="documentAnnotations"
         :document-relations="documentRelations"
         :incoming-relations="incomingRelations ?? []"
+        :incoming-editable="!!onUpdateIncomingRelation && !readonly"
         :other-documents="otherDocuments ?? []"
         :colors="labelColors"
         :selected-id="selectedId"
@@ -404,6 +418,7 @@ onBeforeUnmount(() => {
         @add-document-relation="addDocumentRelation"
         @remove-document-relation="removeDocumentRelation"
         @set-document-relation-labels="setDocumentRelationLabels"
+        @update-incoming-relation="updateIncoming"
         @link="startLinking"
         @remove-relation="removeRelation"
         @set-relation-direction="setRelationDirection"

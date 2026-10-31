@@ -112,6 +112,20 @@ watch(
   { immediate: true },
 );
 
+// Relations other documents hold to the open one, edited from here when the
+// source can write them back; the list is refetched so it shows what is stored.
+const updateIncoming = computed(() => {
+  const update = props.source.updateIncomingRelation;
+  if (!update) return undefined;
+  return async (fromName: string, labels: string[] | null) => {
+    const b = bundle.value;
+    if (!b) return;
+    const toName = documentKey(b.document);
+    await update.call(props.source, fromName, toName, labels);
+    incomingRelations.value = (await props.source.listIncomingRelations?.(toName)) ?? [];
+  };
+});
+
 // True while Back/Next is saving before it moves — the overlay covers the
 // document so nothing is edited after the snapshot was taken.
 const saving = ref(false);
@@ -159,6 +173,7 @@ const onNext = (assignment: Assignment) =>
       :annotation-level="annotationLevel"
       :other-documents="otherDocuments"
       :incoming-relations="incomingRelations"
+      :on-update-incoming-relation="updateIncoming"
       :position="queuePosition"
       :guidelines-url="guidelinesUrl"
       :show-confidence="showConfidence"

@@ -18,6 +18,7 @@ export interface LazySourceDelegate {
   save(assignment: Assignment): Promise<void>;
   listDocuments?(): Promise<DocumentRef[]>;
   listIncomingRelations?(toName: string): Promise<IncomingRelation[]>;
+  updateIncomingRelation?(fromName: string, toName: string, labels: string[] | null): Promise<void>;
   finish?(): Promise<void>;
 }
 

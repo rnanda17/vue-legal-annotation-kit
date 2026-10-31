@@ -21,6 +21,8 @@ const props = withDefaults(
     otherDocuments: DocumentRef[];
     /** Show the relations without letting anything change. */
     readonly?: boolean;
+    /** The "Linked by" relations can be removed and relabelled from here. */
+    incomingEditable?: boolean;
     /** Labels offered in the picker. Hosts pass their own vocabulary (e.g.
      * BlueLab's eight link types); defaults to the built-in case-law set. */
     relationLabels?: string[];
@@ -32,7 +34,11 @@ const emit = defineEmits<{
   add: [toName: string];
   remove: [toName: string];
   "set-labels": [toName: string, labels: string[]];
+  /** A relation another document holds to this one: new labels, or null to remove it. */
+  "update-incoming": [fromName: string, labels: string[] | null];
 }>();
+
+const editIncoming = () => props.incomingEditable && !props.readonly;
 
 const available = (labels: string[]) =>
   props.relationLabels.filter((l) => !labels.includes(l));
@@ -116,13 +122,39 @@ const removeLabel = (rel: DocumentRelation, label: string) =>
             <span class="rel__arrow" aria-hidden="true">←</span>
             <span
               class="rel__end"
-              :title="`Created on ${rel.from} — edit it there`"
+              :title="editIncoming() ? rel.from : `Created on ${rel.from} — edit it there`"
             >
               {{ targetLabel(rel.from) }}
             </span>
+            <button
+              v-if="editIncoming()"
+              class="rel__del"
+              title="Remove relation"
+              @click="emit('update-incoming', rel.from, null)"
+            >
+              🗑
+            </button>
           </div>
-          <div v-if="rel.labels.length" class="rel__labels">
-            <span v-for="l in rel.labels" :key="l" class="chip chip--readonly">{{ l }}</span>
+          <div v-if="rel.labels.length || editIncoming()" class="rel__labels">
+            <span v-for="l in rel.labels" :key="l" class="chip" :class="{ 'chip--readonly': !editIncoming() }">
+              {{ l }}
+              <button
+                v-if="editIncoming()"
+                class="chip__x"
+                @click="emit('update-incoming', rel.from, rel.labels.filter((x) => x !== l))"
+              >
+                ×
+              </button>
+            </span>
+            <select
+              v-if="editIncoming()"
+              class="rel__add-label"
+              value=""
+              @change="($event.target as HTMLSelectElement).value && emit('update-incoming', rel.from, [...rel.labels, ($event.target as HTMLSelectElement).value])"
+            >
+              <option value="">+ label</option>
+              <option v-for="l in available(rel.labels)" :key="l" :value="l">{{ l }}</option>
+            </select>
           </div>
         </li>
       </ul>

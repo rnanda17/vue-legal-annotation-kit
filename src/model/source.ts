@@ -23,7 +23,8 @@ export interface DocumentRef {
 export const documentKey = (d: { name: string; key?: string }): string => d.key ?? d.name;
 
 /** One other document's relation pointing at the document being asked about —
- * for the read-only "Linked by" display, not stored anywhere itself. */
+ * for the "Linked by" display (read-only unless the source implements
+ * updateIncomingRelation); not stored on this document itself. */
 export interface IncomingRelation {
   /** Name of the document that created the relation. */
   from: string;
@@ -59,6 +60,15 @@ export interface AnnotationSource {
    * won't show a "Linked by" section.
    */
   listIncomingRelations?(toName: string): Promise<IncomingRelation[]> | IncomingRelation[];
+  /**
+   * Change the relation document `fromName` holds to `toName`: new labels, or
+   * `null` to remove it. The relation stays stored on `fromName`; the host
+   * writes it there. When a source implements this, the "Linked by" list is
+   * editable from the target document too (remove, relabel), for hosts where
+   * a relation must be correctable wherever the annotator meets it. A
+   * rejection is reported like a failed save and changes nothing.
+   */
+  updateIncomingRelation?(fromName: string, toName: string, labels: string[] | null): Promise<void> | void;
   /**
    * Called once the annotator advances past the last document. Optional —
    * sources that buffer locally (e.g. an offline cache) can use this to flush
