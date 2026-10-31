@@ -22,6 +22,8 @@ const props = defineProps<{
   readonly?: boolean;
   /** Whether the confidence rating on the selection card shows at all. */
   showConfidence?: boolean;
+  /** Labels offered in the relation pickers; forwarded to both lists. */
+  relationLabels?: string[];
 }>();
 
 const emit = defineEmits<{
@@ -133,6 +135,7 @@ const setSelectionMetadata = (value: string) => {
         :relations="documentRelations"
         :incoming-relations="incomingRelations"
         :other-documents="otherDocuments"
+        :relation-labels="relationLabels"
         @add="emit('add-document-relation', $event)"
         @remove="emit('remove-document-relation', $event)"
         @set-labels="(to, labels) => emit('set-document-relation-labels', to, labels)"
@@ -183,6 +186,7 @@ const setSelectionMetadata = (value: string) => {
         :annotations="annotations"
         :colors="colors"
         :readonly="readonly"
+        :relation-labels="relationLabels"
         @remove="(from, to) => emit('remove-relation', from, to)"
         @set-direction="(from, to, dir) => emit('set-relation-direction', from, to, dir)"
         @set-labels="(from, to, labels) => emit('set-relation-labels', from, to, labels)"

@@ -45,6 +45,8 @@ const props = withDefaults(
      * card, and on the assignment as Document Confidence. When hidden the
      * stored confidence values are left exactly as the task carried them. */
     showConfidence?: boolean;
+    /** Labels offered in the relation pickers; defaults to the built-in set. */
+    relationLabels?: string[];
     // Declared as props rather than emits so the view can await what the host
     // returns — `@save="…"` in a parent template still binds to these.
     onSave?: AssignmentHandler;
@@ -379,6 +381,7 @@ onBeforeUnmount(() => {
         :linking-from="linkingFrom"
         :show-confidence="showConfidence"
         :readonly="readonly"
+        :relation-labels="relationLabels"
         @select="onInspectorSelect"
         @set-metadata="setMetadata"
         @set-confidence="setConfidence"
