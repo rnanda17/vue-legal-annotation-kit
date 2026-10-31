@@ -33,6 +33,8 @@ const props = withDefaults(
     relationLabels?: string[];
     /** One document tag at most per document: a new one replaces the old. */
     exclusiveDocumentTags?: boolean;
+    /** One label per relation: picking a label replaces the one set (a relation type). */
+    exclusiveRelationLabels?: boolean;
     /** The annotator's words, where the host's domain names things differently. */
     texts?: Partial<AnnotatorTexts>;
   }>(),
@@ -178,6 +180,7 @@ const onNext = (assignment: Assignment) =>
       :guidelines-url="guidelinesUrl"
       :show-confidence="showConfidence"
       :exclusive-document-tags="exclusiveDocumentTags"
+      :exclusive-relation-labels="exclusiveRelationLabels"
       :relation-labels="relationLabels"
       @save="onSave"
       @next="onNext"

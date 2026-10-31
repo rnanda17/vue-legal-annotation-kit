@@ -29,6 +29,8 @@ const props = defineProps<{
   showConfidence?: boolean;
   /** Labels offered in the relation pickers; forwarded to both lists. */
   relationLabels?: string[];
+  /** One label per relation: picking a label replaces the one set. */
+  exclusiveRelationLabels?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -141,6 +143,7 @@ const setSelectionMetadata = (value: string) => {
         :relations="documentRelations"
         :incoming-relations="incomingRelations"
         :incoming-editable="incomingEditable"
+        :exclusive-labels="exclusiveRelationLabels"
         :other-documents="otherDocuments"
         :relation-labels="relationLabels"
         @add="emit('add-document-relation', $event)"

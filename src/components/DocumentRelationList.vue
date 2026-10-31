@@ -23,6 +23,8 @@ const props = withDefaults(
     readonly?: boolean;
     /** The "Linked by" relations can be removed and relabelled from here. */
     incomingEditable?: boolean;
+    /** One label per relation: picking a label replaces the one set, in one step. */
+    exclusiveLabels?: boolean;
     /** Labels offered in the picker. Hosts pass their own vocabulary (e.g.
      * BlueLab's eight link types); defaults to the built-in case-law set. */
     relationLabels?: string[];
@@ -62,8 +64,10 @@ const targetLabel = (to: string) => {
 const addRelation = (name: string) => {
   if (name) emit("add", name);
 };
+// With exclusive labels a pick replaces the label set: a retype is one change.
+const withLabel = (labels: string[], label: string) => (props.exclusiveLabels ? [label] : [...labels, label]);
 const addLabel = (rel: DocumentRelation, label: string) => {
-  if (label) emit("set-labels", rel.to, [...rel.labels, label]);
+  if (label) emit("set-labels", rel.to, withLabel(rel.labels, label));
 };
 const removeLabel = (rel: DocumentRelation, label: string) =>
   emit("set-labels", rel.to, rel.labels.filter((l) => l !== label));
@@ -94,7 +98,7 @@ const removeLabel = (rel: DocumentRelation, label: string) =>
             value=""
             @change="addLabel(rel, ($event.target as HTMLSelectElement).value)"
           >
-            <option value="">+ label</option>
+            <option value="">{{ exclusiveLabels && rel.labels.length ? "change to…" : "+ label" }}</option>
             <option v-for="l in available(rel.labels)" :key="l" :value="l">{{ l }}</option>
           </select>
         </div>
@@ -150,9 +154,9 @@ const removeLabel = (rel: DocumentRelation, label: string) =>
               v-if="editIncoming()"
               class="rel__add-label"
               value=""
-              @change="($event.target as HTMLSelectElement).value && emit('update-incoming', rel.from, [...rel.labels, ($event.target as HTMLSelectElement).value])"
+              @change="($event.target as HTMLSelectElement).value && emit('update-incoming', rel.from, withLabel(rel.labels, ($event.target as HTMLSelectElement).value))"
             >
-              <option value="">+ label</option>
+              <option value="">{{ exclusiveLabels && rel.labels.length ? "change to…" : "+ label" }}</option>
               <option v-for="l in available(rel.labels)" :key="l" :value="l">{{ l }}</option>
             </select>
           </div>

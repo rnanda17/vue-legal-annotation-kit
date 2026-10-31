@@ -50,6 +50,8 @@ const props = withDefaults(
     showConfidence?: boolean;
     /** One document tag at most: picking a new one replaces the current one. */
     exclusiveDocumentTags?: boolean;
+    /** One label per relation: picking a label replaces the one set (a relation type). */
+    exclusiveRelationLabels?: boolean;
     /** Labels offered in the relation pickers; defaults to the built-in set. */
     relationLabels?: string[];
     // Declared as props rather than emits so the view can await what the host
@@ -407,6 +409,7 @@ onBeforeUnmount(() => {
         :show-confidence="showConfidence"
         :readonly="readonly"
         :relation-labels="relationLabels"
+        :exclusive-relation-labels="exclusiveRelationLabels"
         @select="onInspectorSelect"
         @set-metadata="setMetadata"
         @set-confidence="setConfidence"
