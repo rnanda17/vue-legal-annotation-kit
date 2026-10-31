@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, inject, ref } from "vue";
 import type { Annotation, DocumentAnnotation, DocumentRelation, RelationDirection } from "../types";
 import type { DocumentRef, IncomingRelation } from "../model/source";
 import RelationList from "./RelationList.vue";
 import StarRating from "./StarRating.vue";
 import DocumentRelationList from "./DocumentRelationList.vue";
+import { ANNOTATOR_TEXTS, DEFAULT_ANNOTATOR_TEXTS } from "../types";
+
+const texts = inject(ANNOTATOR_TEXTS, ref(DEFAULT_ANNOTATOR_TEXTS));
 
 // Right column: inspector. Lists the current annotations (regions) and lets the
 // annotator select, delete or link them.
@@ -105,7 +108,7 @@ const setSelectionMetadata = (value: string) => {
     </p>
 
     <template v-if="documentLevel">
-      <h4 class="inspector__title">Document Tags ({{ documentAnnotations.length }})</h4>
+      <h4 class="inspector__title">{{ texts.documentTags }} ({{ documentAnnotations.length }})</h4>
       <ul class="regions">
         <li
           v-for="d in documentAnnotations"

@@ -1,3 +1,4 @@
+import type { InjectionKey, Ref } from "vue";
 // Data model for the annotation format. Mirrors the JSON contract in README §4.
 // Pure types only — no framework, no logic.
 
@@ -136,3 +137,32 @@ export interface TaskData {
   documents: RawDocument[];
   annotation_level: AnnotationLevel;
 }
+
+/**
+ * The annotator's own words, for a host that names things in its domain's
+ * terms (e.g. "Norm type" for document tags, "provision" for document).
+ * Pass a partial set to AnnotatorQueue's `texts`; the rest keep the defaults.
+ */
+export interface AnnotatorTexts {
+  /** Heading of the document-level tag list, sidebar and inspector. */
+  documentTags: string;
+  /** Heading of the document relations. */
+  documentRelations: string;
+  /** The empty relation list. */
+  noDocumentRelations: string;
+  /** The picker that adds a relation to another document. */
+  linkToDocument: string;
+  /** Heading of the relations other documents make to this one. */
+  linkedBy: string;
+}
+
+export const DEFAULT_ANNOTATOR_TEXTS: AnnotatorTexts = {
+  documentTags: "Document Tags",
+  documentRelations: "Document Relations",
+  noDocumentRelations: "No document relations yet.",
+  linkToDocument: "+ link to a document…",
+  linkedBy: "Linked by",
+};
+
+/** How AnnotatorQueue hands the texts to the panels that show them. */
+export const ANNOTATOR_TEXTS: InjectionKey<Ref<AnnotatorTexts>> = Symbol("lak-annotator-texts");

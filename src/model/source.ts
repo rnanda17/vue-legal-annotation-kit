@@ -14,6 +14,9 @@ export interface DocumentRef {
   /** What a relation stores in `to` when this document is its target.
    * Defaults to `name`; set it when names are not unique. */
   key?: string;
+  /** What pickers and relation lists show for this document (e.g. a citation);
+   * defaults to `name (#order)`. The key stays on hover. */
+  label?: string;
 }
 
 /** The value relations use to point at a document: its key, else its name. */

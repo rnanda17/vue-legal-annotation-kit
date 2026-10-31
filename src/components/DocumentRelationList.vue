@@ -2,7 +2,10 @@
 import type { DocumentRelation } from "../types";
 import type { DocumentRef, IncomingRelation } from "../model/source";
 import { documentKey } from "../model/source";
-import { RELATION_LABELS } from "../types";
+import { inject, ref } from "vue";
+import { ANNOTATOR_TEXTS, DEFAULT_ANNOTATOR_TEXTS, RELATION_LABELS } from "../types";
+
+const texts = inject(ANNOTATOR_TEXTS, ref(DEFAULT_ANNOTATOR_TEXTS));
 
 // Document-level counterpart to RelationList: the current document's own
 // outgoing relations to other whole documents, plus a read-only "Linked by"
@@ -40,11 +43,11 @@ const addable = () => {
   return props.otherDocuments.filter((d) => !taken.has(documentKey(d)));
 };
 
-// What a document is called in this list: its name and queue position, which
-// also tells apart documents that share a name — including one that shares
-// the open document's name. A relation whose target is not among
-// otherDocuments shows what it stores.
-const label = (d: DocumentRef) => `${d.name} (#${d.order})`;
+// What a document is called in this list: the host's label when it gives one
+// (a citation, say), else its name and queue position, which also tells apart
+// documents that share a name. The key a relation stores shows on hover. A
+// relation whose target is not among otherDocuments shows what it stores.
+const label = (d: DocumentRef) => d.label ?? `${d.name} (#${d.order})`;
 const targetLabel = (to: string) => {
   const d = props.otherDocuments.find((o) => documentKey(o) === to);
   return d ? label(d) : to;
@@ -62,13 +65,13 @@ const removeLabel = (rel: DocumentRelation, label: string) =>
 
 <template>
   <div class="doc-relations">
-    <h4 class="doc-relations__title">Document Relations ({{ relations.length }})</h4>
+    <h4 class="doc-relations__title">{{ texts.documentRelations }} ({{ relations.length }})</h4>
 
     <ul class="rel-list">
       <li v-for="rel in relations" :key="rel.to" class="rel">
         <div class="rel__ends">
           <span class="rel__arrow" aria-hidden="true">→</span>
-          <span class="rel__end" :title="targetLabel(rel.to)">{{ targetLabel(rel.to) }}</span>
+          <span class="rel__end" :title="rel.to">{{ targetLabel(rel.to) }}</span>
           <button v-if="!readonly" class="rel__del" title="Remove relation" @click="emit('remove', rel.to)">
             🗑
           </button>
@@ -90,7 +93,7 @@ const removeLabel = (rel: DocumentRelation, label: string) =>
           </select>
         </div>
       </li>
-      <li v-if="!relations.length" class="rel-list__empty">No document relations yet.</li>
+      <li v-if="!relations.length" class="rel-list__empty">{{ texts.noDocumentRelations }}</li>
     </ul>
 
     <select
@@ -99,13 +102,13 @@ const removeLabel = (rel: DocumentRelation, label: string) =>
       value=""
       @change="addRelation(($event.target as HTMLSelectElement).value)"
     >
-      <option value="">+ link to a document…</option>
-      <option v-for="d in addable()" :key="documentKey(d)" :value="documentKey(d)">{{ label(d) }}</option>
+      <option value="">{{ texts.linkToDocument }}</option>
+      <option v-for="d in addable()" :key="documentKey(d)" :value="documentKey(d)" :title="documentKey(d)">{{ label(d) }}</option>
     </select>
 
     <template v-if="incomingRelations.length">
       <h4 class="doc-relations__title doc-relations__title--incoming">
-        Linked by ({{ incomingRelations.length }})
+        {{ texts.linkedBy }} ({{ incomingRelations.length }})
       </h4>
       <ul class="rel-list">
         <li v-for="(rel, i) in incomingRelations" :key="i" class="rel rel--incoming">
@@ -115,7 +118,7 @@ const removeLabel = (rel: DocumentRelation, label: string) =>
               class="rel__end"
               :title="`Created on ${rel.from} — edit it there`"
             >
-              {{ rel.from }}
+              {{ targetLabel(rel.from) }}
             </span>
           </div>
           <div v-if="rel.labels.length" class="rel__labels">

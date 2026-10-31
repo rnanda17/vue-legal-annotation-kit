@@ -9,6 +9,8 @@ const props = withDefaults(
     position: QueuePosition;
     annotationLevel: AnnotationLevel;
     documentName: string;
+    /** The document's key, shown on hover beside the name. */
+    documentKey?: string;
     /** Whether there's anything the Save button hasn't captured yet. */
     unsaved?: boolean;
     /** Briefly true right after a manual save, for a "Saved ✓" confirmation. */
@@ -44,7 +46,7 @@ const percent = () =>
 <template>
   <header class="header">
     <div class="header__left">
-      <span class="header__doc-name" :title="documentName">{{ documentName }}</span>
+      <span class="header__doc-name" :title="documentKey ? `${documentName} (${documentKey})` : documentName">{{ documentName }}</span>
       <span class="badge badge--level">{{ LEVEL_LABELS[annotationLevel] }}</span>
       <span v-if="status" class="badge" :class="status === 'done' ? 'badge--done' : 'badge--pending'">
         {{ status }}

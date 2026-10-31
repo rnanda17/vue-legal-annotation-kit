@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { inject, ref } from "vue";
 import type { DocumentAnnotation, Label } from "../types";
+import { ANNOTATOR_TEXTS, DEFAULT_ANNOTATOR_TEXTS } from "../types";
 import StarRating from "./StarRating.vue";
 
 // Left column: label picker + confidence ratings.
@@ -17,6 +19,8 @@ const props = defineProps<{
   /** Whether the confidence rating shows at all; off hides it entirely. */
   showConfidence?: boolean;
 }>();
+
+const texts = inject(ANNOTATOR_TEXTS, ref(DEFAULT_ANNOTATOR_TEXTS));
 
 defineEmits<{
   select: [label: Label];
@@ -61,7 +65,7 @@ const hotkey = (index: number) => (index < 9 ? String(index + 1) : index === 9 ?
     </ul>
 
     <div v-else class="sidebar__doc-tags">
-      <h4 class="sidebar__doc-tags-title">Document Tags</h4>
+      <h4 class="sidebar__doc-tags-title">{{ texts.documentTags }}</h4>
       <ul class="doc-tags">
         <li
           v-for="label in labels"

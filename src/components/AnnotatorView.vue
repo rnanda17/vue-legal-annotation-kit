@@ -45,6 +45,8 @@ const props = withDefaults(
      * card, and on the assignment as Document Confidence. When hidden the
      * stored confidence values are left exactly as the task carried them. */
     showConfidence?: boolean;
+    /** One document tag at most: picking a new one replaces the current one. */
+    exclusiveDocumentTags?: boolean;
     /** Labels offered in the relation pickers; defaults to the built-in set. */
     relationLabels?: string[];
     // Declared as props rather than emits so the view can await what the host
@@ -113,6 +115,14 @@ const {
   existingDraft?.documentAnnotations ?? props.assignment.document_annotations,
   existingDraft?.documentRelations ?? props.assignment.document_relations,
 );
+
+// With exclusive document tags, a tag not yet set replaces whatever is set.
+const onToggleDocumentLabel = (label: Label) => {
+  if (props.exclusiveDocumentTags && !documentAnnotations.value.some((d) => d.label === label.name)) {
+    for (const d of [...documentAnnotations.value]) removeDocumentAnnotation(d.id);
+  }
+  toggleDocumentLabel(label);
+};
 
 // Snap the raw browser selection to the task's declared granularity — e.g. a
 // word-level task captures the whole word even if only part of it was
@@ -322,6 +332,7 @@ onBeforeUnmount(() => {
       :position="position"
       :annotation-level="annotationLevel"
       :document-name="document.name"
+      :document-key="document.key"
       :unsaved="hasUnsavedChanges"
       :just-saved="justSaved"
       :navigation="navigation"
@@ -353,7 +364,7 @@ onBeforeUnmount(() => {
         :readonly="readonly"
         v-model:document-confidence="documentConfidence"
         @select="setActiveLabel"
-        @toggle-document-label="toggleDocumentLabel"
+        @toggle-document-label="onToggleDocumentLabel"
       />
       <DocumentTextView v-if="isDocumentLevel" :text="document.full_text" />
       <DocumentPane

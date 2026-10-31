@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, provide, ref, watch } from "vue";
 import type { AnnotationSource, DocumentRef, IncomingRelation } from "../model/source";
 import { documentKey } from "../model/source";
-import type { AnnotationLevel, Assignment, Labelset } from "../types";
+import type { AnnotationLevel, AnnotatorTexts, Assignment, Labelset } from "../types";
+import { ANNOTATOR_TEXTS, DEFAULT_ANNOTATOR_TEXTS } from "../types";
 import { useAssignmentQueue } from "../model/useAssignmentQueue";
 import AnnotatorView from "./AnnotatorView.vue";
 
@@ -30,8 +31,17 @@ const props = withDefaults(
     urlParam?: string | false;
     /** Labels offered in the relation pickers; defaults to the built-in set. */
     relationLabels?: string[];
+    /** One document tag at most per document: a new one replaces the old. */
+    exclusiveDocumentTags?: boolean;
+    /** The annotator's words, where the host's domain names things differently. */
+    texts?: Partial<AnnotatorTexts>;
   }>(),
   { urlParam: "seq", showConfidence: true },
+);
+
+provide(
+  ANNOTATOR_TEXTS,
+  computed(() => ({ ...DEFAULT_ANNOTATOR_TEXTS, ...props.texts })),
 );
 
 const emit = defineEmits<{
@@ -152,6 +162,7 @@ const onNext = (assignment: Assignment) =>
       :position="queuePosition"
       :guidelines-url="guidelinesUrl"
       :show-confidence="showConfidence"
+      :exclusive-document-tags="exclusiveDocumentTags"
       :relation-labels="relationLabels"
       @save="onSave"
       @next="onNext"
